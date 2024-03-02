@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet"> 
+
+    <title>Our Blog Post</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            position: relative;
+            float: left;
+            box-sizing: border-box;
+        }
+        body{
+            width: 100%;
+            height: 100vh;
+        }
+        h1{
+            width: 100%;
+            text-align: center;
+            margin: 2% 0;
+            /* background-color: red; */
+        }
+        .top{
+            width: 100%;
+            height: 50px;
+            /* background-color: blue; */
+        }
+        /* stringing */
+        .top button{
+            font-size: 16px;
+            padding: .5em;
+            margin: 0 5%;
+            cursor: pointer;
+            
+        }
+        /* selecting using the nth-child */
+
+        .top button:nth-child(2){
+            float: right;
+        }
+        /* selecting using the class */
+
+        /* .top .fav{
+            float: right;
+        } */
+        .blogs{
+            width: 90%;
+            margin: 2% 5%;
+            /* background-color: green; */
+        }
+        .blogs .oneblog{
+            width: 90%;
+            margin: 2%;
+            box-shadow: 3px 3px 3px rgba(0, 0, 0, .6);
+        }
+        .oneblog h3{
+            margin: 2%;
+            font-size: 18px;
+        }
+        .oneblog p{
+            margin: 2%;
+            font-size: 16px;
+        }
+        .oneblog button{
+            float: right;
+            font-size: 15px;
+            padding: .5em;
+            cursor: pointer;
+        }
+        .pages{
+            position: absolute;
+            left: 50%;
+            bottom: 2%;
+            transform: translateX(-50%);
+            width: 20%;
+            /* background-color: blue; */
+        }
+        .pages button{
+            margin: 1% 2%;
+            padding: .5em;
+            font-size: 13px;
+            width: 28%;
+        }
+        .modal{
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%,-50%);
+            background-color: #f5f5f5;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            z-index: 100000;
+            display: none;
+        }
+        .modal input, .modal textarea{
+            width: 80%;
+            height: 50px;
+            margin: 2% 10%;
+            font-size: 17px;
+            padding: .6em;
+        }
+        .modal textarea{
+            height: 200px;
+            resize: none;
+        }
+        .modal .addPost{
+            position: relative;
+            float: left; 
+            width:15%;
+            margin-left: 20%;
+            height: 40px;
+            cursor: pointer;                     
+        }
+        .modal .closeModal{
+            position: relative;
+            float: right; 
+            width:15%;
+            margin-right: 20%;
+            height: 40px;
+            cursor: pointer;                     
+        }
+
+        #heart{
+            color: grey;
+            float: right;
+            font-size: 20px;
+            padding: .5em;          
+            cursor: pointer;
+        }
+        #heart.red{
+            color: red;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <h1>Welcome to Our Blog Post</h1>
+    <div class="top">
+        <button id="openModal">Add new Post</button>
+        <button class="fav">Favorites</button>
+    </div>
+
+    <div class="modal">
+        <input type="text" placeholder="Blog Title" id="title">
+        <textarea placeholder="Blog here" id="content"></textarea>
+        <button class="addPost">Post</button>
+        <button class="closeModal">Close</button>
+    </div>
+    <div class="blogs">
+    </div>
+    <div class="pages">
+        <button class="prevbtn">Prev</button>
+        <button class="pgno">1</button>
+        <button class="nextbtn">Next</button>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        apiUrl = "https://jsonplaceholder.typicode.com/posts"
+
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || {};
+
+        // Function to update favorites in local storage
+        function updateFavorites(postId, isFavorite) {
+            favorites[postId] = isFavorite;
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+        $(".fav").click(function () {
+                        displayFavorites();
+        });
+
+        function displayFavorites() {
+        $('.oneblog').remove();
+        $('.pages').hide(); 
+
+        for (const postId in favorites) {
+            if (favorites[postId]) {
+                fetch(`${apiUrl}/${postId}`)
+                    .then(response => response.json())
+                    .then(post => {
+                        const heart = 'red';
+
+                        mySDiv = `<div class='oneblog'><i class='fa fa-heart ${heart}' id='heart'></i><h3>${post['title']}</h3><p>${post['body']}</p><button>Add to favorites</button></div>`;
+                        $('.blogs').append(mySDiv);
+                    });
+            }
+        }
+
+            if (!$('.backToFirstPage').length) {
+            const backButton = `<button class="backToFirstPage">Back to First Page</button>`;
+            $('.blogs').append(backButton);
+        }
+
+                $(".backToFirstPage").click(function () {
+                $('.oneblog').remove();
+                $('.pages').show();
+                pageNumber = 1;
+                indexStart = 0;
+                indexEnd = 2;
+
+                pagepost = json.slice(indexStart, indexEnd);
+
+                for (const i in pagepost) {
+                    const isFavorite = favorites[pagepost[i]['id']] || false;
+                    const heart = isFavorite ? 'red' : '';
+
+                    mySDiv = `<div class='oneblog'><i class='fa fa-heart ${heart}' id='heart'></i><h3>${pagepost[i]['title']}</h3><p>${pagepost[i]['body']}</p><button>Add to favorites</button></div>`;
+                    $('.blogs').append(mySDiv);
+                }
+
+                $(".pgno").html(pageNumber);
+                $('.backToFirstPage').remove();
+            });
+        }
+
+        let pageNumber = 1;
+        let indexStart = 0;
+        let indexEnd = 2;  
+        let json;
+        fetch(apiUrl)
+            .then((response) => response.json())
+            .then((data) => {
+            json = data;
+            pagepost=json.slice(indexStart,indexEnd);
+
+            for (const i in pagepost) {  
+                const isFavorite = favorites[pagepost[i]['id']] || false;
+                const heart = isFavorite ? 'red' : '';
+
+                mySDiv = `<div class='oneblog'><i class='fa fa-heart ${heart}' id='heart'></i>
+                    <h3>${pagepost[i]['title']}</h3><p>${pagepost[i]['body']}</p><button>Add to favorites</button></div>`;
+                $('.blogs').append(mySDiv);
+            }
+                  
+            $(".nextbtn").click(function(){
+                if(pageNumber < 50){
+                    pageNumber +=1;
+                    $('.oneblog').remove();
+                    indexStart +=2;
+                    indexEnd +=2;          
+                    pagepost = json.slice(indexStart,indexEnd);
+                                                                                 
+                    for(i=0; i<pagepost.length; i++){               
+                        const isFavorite = favorites[pagepost[i]['id']] || false;
+                        const heart = isFavorite ? 'red' : '';
+
+                        mySDiv = `<div class='oneblog'><i class='fa fa-heart ${heart}' id='heart'></i>
+                            <h3>${pagepost[i]['title']}</h3><p>${pagepost[i]['body']}</p><button>Add to favorites</button></div>`;
+                        $('.blogs').append(mySDiv);
+                    }                                                                                                                                                                          
+                }                            
+            $(".pgno").html(pageNumber);                               
+            })
+            
+            $(".prevbtn").click(function(){
+                if(pageNumber>1){
+                    pageNumber -=1;
+                    $('.oneblog').remove();
+                    indexStart -=2;
+                    indexEnd -=2;          
+                    pagepost = json.slice(indexStart,indexEnd);
+                                                                                 
+                    for(i=0; i<pagepost.length; i++){               
+                        const isFavorite = favorites[pagepost[i]['id']] || false;
+                        const heart = isFavorite ? 'red' : '';
+
+                        mySDiv = `<div class='oneblog'><i class='fa fa-heart ${heart}' id='heart'></i><h3>${pagepost[i]['title']}</h3><p>${pagepost[i]['body']}</p><button>Add to favorites</button></div>`;
+                        $('.blogs').append(mySDiv);
+                    }   
+                    $(".pgno").html(pageNumber);
+                }
+            })
+            $(".blogs").on("click", ".oneblog button", function(){ // Add to favorites           
+                const postId = pagepost[$(this).closest('.oneblog').index()]['id'];
+                const heart = $(this).siblings("#heart")[0];
+                const isFavorite = heart.classList.contains('red');
+
+                if (isFavorite) {
+                    heart.classList.remove('red');
+                } else {
+                    heart.classList.add('red');
+                }
+
+                updateFavorites(postId, !isFavorite);
+        })              
+            });
+        
+        $("#openModal").click(function(){
+            $(".modal").show();
+        })
+        $(".closeModal").click(function(){
+            $(".modal").hide();
+        })
+        $(".addPost").click(function(){       
+            const newTitle = $("#title").val();
+            const newContent = $("#content").val();          
+            fetch(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                title: newTitle,
+                body: newContent,
+                userId: 1,
+            }),
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8',
+            },
+            })
+            .then((response) => response.json())
+            .then((json) => {
+                if(json['title']==newTitle && json['body']==newContent){
+                    $('.modal').hide();
+                }
+                
+            });
+            
+            })
+           
+    </script>
+</body>
+</html>
